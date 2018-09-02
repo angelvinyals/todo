@@ -95,6 +95,11 @@ export default class App extends React.Component {
   });
   }
 
+  handleFilter = (type) => {
+    console.log('APP.. inside handleFilter....')
+    console.log('type: ', type)
+  }
+
   renderSeparator = () => (
     <View
       style={{
@@ -150,7 +155,9 @@ export default class App extends React.Component {
             ListHeaderComponent={this.renderHeader}
           />
         </View>
-        <Footer />
+        <Footer
+          onFilter= {this.handleFilter}
+        />
       </View>
     );
   }

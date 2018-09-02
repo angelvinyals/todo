@@ -15,13 +15,13 @@ class Footer extends Component {
 	    return (
 	    	<View style={styles.container}>
 	    		<View style={styles.filters}>
-		    		<TouchableOpacity  style={styles.filter}>
+		    		<TouchableOpacity  style={styles.filter} onPress={()=>this.props.onFilter('ALL')}>
 		    			<Text>All</Text>
 		    		</TouchableOpacity>
-		    		<TouchableOpacity  style={styles.filter}>
+		    		<TouchableOpacity  style={styles.filter} onPress={()=>this.props.onFilter('ACTIVE')}>
 		    			<Text>Active</Text>
 		    		</TouchableOpacity>
-		    		<TouchableOpacity  style={styles.filter}>
+		    		<TouchableOpacity  style={styles.filter} onPress={()=>this.props.onFilter('COMPLETED')}>
 		    			<Text>Completed</Text>
 		    		</TouchableOpacity>
 		    	</View>
