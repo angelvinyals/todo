@@ -30,16 +30,6 @@ export default class App extends React.Component {
 
   _cacheResourcesAsync = async () => {
     SplashScreen.hide();
-    const images = [
-      require('./assets/images/expo-icon.png'),
-      require('./assets/images/slack-icon.png'),
-    ];
-
-    const cacheImages = images.map((image) => {
-      return Asset.fromModule(image).downloadAsync();
-    });
-
-    await Promise.all(cacheImages);
     this.setState({ isReady: true });
   }
 
