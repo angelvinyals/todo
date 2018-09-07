@@ -5,6 +5,16 @@ import Header from './components/header'
 import Footer from './components/footer'
 import Row from './components/row'
 
+const filterItems= (filter, items) => {
+  if(filter==="ALL") return items
+  if(filter==="ACTIVE") {
+    return items.filter(item => !item.complete)
+    } 
+  if(filter==="COMPLETED") {
+    return items.filter(item => item.complete)
+    } 
+}
+
 export default class App extends React.Component {
   state = {
     items:[
@@ -21,6 +31,7 @@ export default class App extends React.Component {
     ],
     allComplete: false,
     isReady: false,
+    filter: "ALL",
   }
   
 
@@ -98,6 +109,10 @@ export default class App extends React.Component {
   handleFilter = (type) => {
     console.log('APP.. inside handleFilter....')
     console.log('type: ', type)
+   
+    this.setState({
+      filter: type
+    })
   }
 
   renderSeparator = () => (
@@ -136,11 +151,13 @@ export default class App extends React.Component {
       );
     }
     console.log('render... is  Ready')
+    const itemsFiltered= filterItems(this.state.filter, this.state.items)
+    console.log('itemsFiltered:', itemsFiltered)
     return (
       <View style={styles.container}>
         <View style={styles.content}>
           <FlatList
-            data={this.state.items}
+            data={itemsFiltered}
             renderItem={({item}) => 
               <Row 
                 id={item.key}
@@ -157,6 +174,7 @@ export default class App extends React.Component {
         </View>
         <Footer
           onFilter= {this.handleFilter}
+          filter={this.state.filter}
         />
       </View>
     );
