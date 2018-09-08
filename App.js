@@ -217,6 +217,21 @@ _filterItems= (filter, items) => {
     )
   }
 
+  handleClearCompleted = async() =>{
+    console.log('APP.. inside handleClearCompleted...')
+    const newItems= this.state.items.filter(item =>  !item.complete)
+
+    await this._storeData(STORAGE_KEY,newItems)
+
+    const valueObject= await this._retrieveData(STORAGE_KEY);
+    console.log('value of item in AsyncStorage:')
+    console.table(valueObject)
+
+    this.setState({
+      items:newItems,
+    });
+  }
+
   render() {
     console.log('render... app begins')
     if (!this.state.isReady) {
@@ -256,6 +271,7 @@ _filterItems= (filter, items) => {
           onFilter= {this.handleFilter}
           filter={this.state.filter}
           count={this.state.items.filter(item => !item.complete).length}
+          clearCompleted={this.handleClearCompleted}
         />
       </View>
     );
