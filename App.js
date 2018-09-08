@@ -161,7 +161,7 @@ export default class App extends React.Component {
     });
   }
 
- handleRemove = async(id) => {
+handleRemove = async(id) => {
   console.log('APP.. inside handleRemove....')
   console.log('id: ', id)
   const newItems= this.state.items.filter(item=>{
@@ -173,20 +173,20 @@ export default class App extends React.Component {
   const valueObject= await this._retrieveData(STORAGE_KEY);
   console.log('value of item in AsyncStorage:')
   console.table(valueObject)
-  
+
   this.setState({
     items:newItems,
   });
-  }
+}
 
-  handleFilter = (type) => {
-    console.log('APP.. inside handleFilter....')
-    console.log('type: ', type)
-   
-    this.setState({
-      filter: type
-    })
-  }
+handleFilter = (type) => {
+  console.log('APP.. inside handleFilter....')
+  console.log('type: ', type)
+ 
+  this.setState({
+    filter: type
+  })
+}
 
 _filterItems= (filter, items) => {
   if(filter==="ALL")        return items
@@ -212,6 +212,7 @@ _filterItems= (filter, items) => {
       <Header 
         onAddItem = {this.handleAddItem}
         onToggleAllComplete = {this.handleToggleAllComplete}
+        count={this.handleCount}
       />
     )
   }
@@ -254,6 +255,7 @@ _filterItems= (filter, items) => {
         <Footer
           onFilter= {this.handleFilter}
           filter={this.state.filter}
+          count={this.state.items.filter(item => !item.complete).length}
         />
       </View>
     );
