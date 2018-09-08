@@ -1,40 +1,64 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, Platform, FlatList, Keyboard, } from 'react-native'
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  Image, 
+  Platform, 
+  FlatList, 
+  Keyboard,
+  AsyncStorage 
+} from 'react-native'
 import { Asset, SplashScreen } from 'expo'
 import Header from './components/header'
 import Footer from './components/footer'
 import Row from './components/row'
 
+export const STORAGE_KEY = '@mobileTodo:items';
+
 export default class App extends React.Component {
   state = {
-    items:[
-      {
-        key: Date.now(),
-        text: 'primer missatge',
-        complete:false
-      },
-      {
-        key: '123',
-        text: 'segons missatge',
-        complete:true
-      },
-    ],
+    items:[],
     allComplete: false,
     isReady: false,
     filter: "ALL",
-  }
-  
+  }  
 
   componentDidMount() {
     SplashScreen.preventAutoHide();
   }
 
   _cacheResourcesAsync = async () => {
+    console.log('APP.. inside _cacheResourcesAsync....')
     SplashScreen.hide();
-    this.setState({ isReady: true });
+    const valueObject= await this._retrieveData(STORAGE_KEY);
+    if (valueObject ){
+      console.log('APP.. inside _cacheResourcesAsync.... valueObject:',valueObject)
+      this.setState({ 
+        items: valueObject,
+        isReady: true 
+      })
+      return
+    }    
+    console.log('_cacheResourcesAsync....NO DATA')
+    this.setState({
+      items:[
+        {
+          key: Date.now(),
+          text: 'dades falses.no tretes de  AsyncStorage',
+          complete:false
+        },
+        {
+          key: '123',
+          text: 'prova2',
+          complete:true
+        },
+      ],
+      isReady: true
+    })
   }
 
-  handleAddItem = (textsubmit) =>{
+  handleAddItem = async(textsubmit) =>{
     console.log('APP.. inside handleAddItem....')
     console.log('textsubmit:', textsubmit)
     const newItems = [
@@ -45,13 +69,54 @@ export default class App extends React.Component {
         complete:false
       }
     ]
+    //console.log('APP.. going to _storeData')
+    await this._storeData(STORAGE_KEY,newItems)
+
+    const valueObject= await this._retrieveData(STORAGE_KEY);
+    console.log('value of item in AsyncStorage:', valueObject)
+    
     this.setState({
-      items:newItems,
-      
+      items:newItems,      
     });    
   }
 
-  handleToggleAllComplete = () => {
+  _retrieveData = async (key) => {
+    console.log('APP.. inside _retrieveData')
+    try {
+      const value = await AsyncStorage.getItem(key);
+      if (value !== null) {
+        console.log(value)
+        return JSON.parse(value) 
+      }       
+    } catch (error) {
+      // Error retrieving data
+      alert(error);
+    }
+  }
+
+  _storeData = async (key, dataObject) => {
+    console.log('APP.. inside _storeData')
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(dataObject));
+    } catch (error) {
+      // Error saving data
+      alert(error);
+    }
+  }
+
+  _mergeData = async (key, dataObjectToMerge) => {
+    console.log('APP.. inside _mergeData')
+    console.log('key:',  key)
+    console.log('dataObjectToMerge:', dataObjectToMerge)
+    try {
+      await AsyncStorage.mergeItem(key, JSON.stringify(dataObjectToMerge));
+    } catch (error) {
+      // Error saving data
+      alert(error);
+    }
+  }
+
+  handleToggleAllComplete = async() => {
     console.log('APP.. inside handleToggleAllComplete....')
     const complete= !this.state.allComplete
     console.log('complete:', complete)
@@ -59,7 +124,13 @@ export default class App extends React.Component {
       ...item,
       complete,
      }))
-    console.table(newItems)
+    //console.log('APP.. going to _storeData')
+    await this._storeData(STORAGE_KEY,newItems)
+
+    const valueObject= await this._retrieveData(STORAGE_KEY);
+    console.log('value of item in AsyncStorage:')
+    console.table(valueObject)
+
     // Correct
     this.setState({
       items:newItems,
@@ -67,7 +138,7 @@ export default class App extends React.Component {
     });
   }
 
-  handleToggleComplete = (id, complete) => {
+  handleToggleComplete = async(id, complete) => {
     console.log('APP.. inside handleToggleComplete....')
     console.log('id: ', id)
     console.log('complete: ', complete)
@@ -78,20 +149,32 @@ export default class App extends React.Component {
         complete
       }
     })
-     console.table(newItems)
-     this.setState({
+
+    await this._storeData(STORAGE_KEY,newItems)
+
+    const valueObject= await this._retrieveData(STORAGE_KEY);
+    console.log('value of item in AsyncStorage:')
+    console.table(valueObject)
+    
+    this.setState({
       items:newItems,
     });
   }
 
- handleRemove = (id) => {
+ handleRemove = async(id) => {
   console.log('APP.. inside handleRemove....')
   console.log('id: ', id)
   const newItems= this.state.items.filter(item=>{
     return item.key !== id 
   })
-   console.table(newItems)
-   this.setState({
+
+  await this._storeData(STORAGE_KEY,newItems)
+
+  const valueObject= await this._retrieveData(STORAGE_KEY);
+  console.log('value of item in AsyncStorage:')
+  console.table(valueObject)
+  
+  this.setState({
     items:newItems,
   });
   }
