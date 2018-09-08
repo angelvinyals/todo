@@ -7,7 +7,8 @@ import {
   Platform, 
   FlatList, 
   Keyboard,
-  AsyncStorage 
+  AsyncStorage,
+  ActivityIndicator,
 } from 'react-native'
 import { Asset, SplashScreen } from 'expo'
 import Header from './components/header'
@@ -22,6 +23,7 @@ export default class App extends React.Component {
     allComplete: false,
     isReady: false,
     filter: "ALL",
+    isLoading:false,
   }  
 
   componentDidMount() {
@@ -61,6 +63,7 @@ export default class App extends React.Component {
   handleAddItem = async(textsubmit) =>{
     console.log('APP.. inside handleAddItem....')
     console.log('textsubmit:', textsubmit)
+    this.setState({isLoading: true})
     const newItems = [
       ...this.state.items,
       {
@@ -76,7 +79,8 @@ export default class App extends React.Component {
     console.log('value of item in AsyncStorage:', valueObject)
     
     this.setState({
-      items:newItems,      
+      items:newItems,
+      isLoading: false,      
     });    
   }
 
@@ -104,20 +108,9 @@ export default class App extends React.Component {
     }
   }
 
-  _mergeData = async (key, dataObjectToMerge) => {
-    console.log('APP.. inside _mergeData')
-    console.log('key:',  key)
-    console.log('dataObjectToMerge:', dataObjectToMerge)
-    try {
-      await AsyncStorage.mergeItem(key, JSON.stringify(dataObjectToMerge));
-    } catch (error) {
-      // Error saving data
-      alert(error);
-    }
-  }
-
   handleToggleAllComplete = async() => {
     console.log('APP.. inside handleToggleAllComplete....')
+    this.setState({isLoading: true})
     const complete= !this.state.allComplete
     console.log('complete:', complete)
     const newItems= this.state.items.map(item=>({
@@ -135,11 +128,13 @@ export default class App extends React.Component {
     this.setState({
       items:newItems,
       allComplete: complete,
+      isLoading: false,
     });
   }
 
   handleToggleComplete = async(id, complete) => {
     console.log('APP.. inside handleToggleComplete....')
+    this.setState({isLoading: true})
     console.log('id: ', id)
     console.log('complete: ', complete)
     const newItems= this.state.items.map(item=>{
@@ -158,11 +153,13 @@ export default class App extends React.Component {
     
     this.setState({
       items:newItems,
+      isLoading: false,
     });
   }
 
 handleRemove = async(id) => {
   console.log('APP.. inside handleRemove....')
+  this.setState({isLoading: true})
   console.log('id: ', id)
   const newItems= this.state.items.filter(item=>{
     return item.key !== id 
@@ -176,6 +173,7 @@ handleRemove = async(id) => {
 
   this.setState({
     items:newItems,
+    isLoading: false,
   });
 }
 
@@ -219,6 +217,7 @@ _filterItems= (filter, items) => {
 
   handleClearCompleted = async() =>{
     console.log('APP.. inside handleClearCompleted...')
+    this.setState({isLoading: true})
     const newItems= this.state.items.filter(item =>  !item.complete)
 
     await this._storeData(STORAGE_KEY,newItems)
@@ -229,8 +228,42 @@ _filterItems= (filter, items) => {
 
     this.setState({
       items:newItems,
+      isLoading: false,
     });
   }
+
+  handleToggleEditing = (key, editing) => {
+    console.log('APP.. inside handleToogleEditing...')
+    console.log('key: ',key)
+    console.log('editing: ', editing)
+    const newItems =  this.state.items.map((item) =>{
+      if(item.key!==key) return item;
+      return {
+        ...item,
+        editing
+      }
+    })
+    this.setState({
+      items:newItems,
+    });
+  }
+
+  handleUpdateText = (key, text) => {
+    console.log('APP.. inside handleUpdateText...')
+    console.log('key: ',key)
+    console.log('text: ', text)
+    const newItems =  this.state.items.map((item) =>{
+      if(item.key!==key) return item;
+      return {
+        ...item,
+        text
+      }
+    })
+    this.setState({
+      items:newItems,
+    });
+  }
+
 
   render() {
     console.log('render... app begins')
@@ -260,6 +293,9 @@ _filterItems= (filter, items) => {
                 complete={item.complete}
                 onComplete={(complete) => this.handleToggleComplete(item.key, complete)}
                 onRemove={() => this.handleRemove(item.key)}
+                onToggleEdit= {(editing) => this.handleToggleEditing(item.key, editing)}
+                onUpdate = {(text)=> this.handleUpdateText (item.key, text)}
+                editing= {item.editing}
               />
             }
             keyExtractor={item => item.key.toString()}
@@ -273,7 +309,15 @@ _filterItems= (filter, items) => {
           count={this.state.items.filter(item => !item.complete).length}
           clearCompleted={this.handleClearCompleted}
         />
-      </View>
+        {this.state.isLoading && 
+          <View style={styles.loading}>
+            <ActivityIndicator
+              animating
+              size="large"
+            />
+          </View>
+        }
+      </View >
     );
   }
 }
@@ -294,6 +338,16 @@ const styles = StyleSheet.create({
   },
   list:{
     backgroundColor:'white',
+  },
+  loading:{
+    position: "absolute",
+    left:0,
+    top:0,
+    right:0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,.4)"
   },
   separator:{
     borderWidth: 1,
