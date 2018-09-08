@@ -1,14 +1,5 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  Image, 
-  Platform, 
-  FlatList, 
-  Keyboard,  
-  AsyncStorage  
-} from 'react-native'
+import { StyleSheet, Text, View, Image, Platform, FlatList, Keyboard, } from 'react-native'
 import { Asset, SplashScreen } from 'expo'
 import Header from './components/header'
 import Footer from './components/footer'
@@ -26,34 +17,31 @@ const filterItems= (filter, items) => {
 
 export default class App extends React.Component {
   state = {
-    items:[],
+    items:[
+      {
+        key: Date.now(),
+        text: 'primer missatge',
+        complete:false
+      },
+      {
+        key: '123',
+        text: 'segons missatge',
+        complete:true
+      },
+    ],
     allComplete: false,
     isReady: false,
     filter: "ALL",
-    count:2,
   }
   
-  componentDidMoun(){
-    SplashScreen.preventAutoHide();    
+
+  componentDidMount() {
+    SplashScreen.preventAutoHide();
   }
 
   _cacheResourcesAsync = async () => {
-    try {
-      const value = await AsyncStorage.getItem('@todo:ITEMS');
-       console.log('value: ',value);
-      if (value !== null) {
-        // We have data!!
-        SplashScreen.hide();
-        await this.setState({
-          items: value,
-          isReady: true
-        })
-      }
-    } catch (error) {
-       // Error retrieving data
-       console.log('error in _cacheResourcesAsync:', error)
-    }
-    
+    SplashScreen.hide();
+    this.setState({ isReady: true });
   }
 
   handleAddItem = (textsubmit) =>{
@@ -67,22 +55,11 @@ export default class App extends React.Component {
         complete:false
       }
     ]
-    this._storeData(newItems)
     this.setState({
-      items:newItems,      
-    })
+      items:newItems,
+      
+    });    
   }
-
-  _storeData = async (items) => {
-    console.log('_storeData')
-    console.log('items: ', items )
-  try {
-    await AsyncStorage.setItem('@todo:ITEMS', JSON.stringify(items));    
-  } catch (error) {
-    // Error saving data
-    console.log('error saving data _storeData:', error)
-  }
-}
 
   handleToggleAllComplete = () => {
     console.log('APP.. inside handleToggleAllComplete....')
@@ -93,7 +70,6 @@ export default class App extends React.Component {
       complete,
      }))
     console.table(newItems)
-    this._storeData(newItems)
     // Correct
     this.setState({
       items:newItems,
@@ -118,29 +94,16 @@ export default class App extends React.Component {
     });
   }
 
-  handleRemove = (id) => {
-    console.log('APP.. inside handleRemove....')
-    console.log('id: ', id)
-    const newItems= this.state.items.filter(item=>{
-      return item.key !== id 
-    })
-     console.table(newItems)
-     this._storeData(newItems)
-     this.setState({
-      items:newItems,
-    })    
-  }
-
-  handleClearComplete = () => {
-    console.log('APP.. inside handleClearComplete....')
-    const newItems= this.state.items.filter(item=>{
-      return item.complete === false 
-    })
-     console.table(newItems)
-     this._storeData(newItems)
-     this.setState({
-      items:newItems,
-    })
+ handleRemove = (id) => {
+  console.log('APP.. inside handleRemove....')
+  console.log('id: ', id)
+  const newItems= this.state.items.filter(item=>{
+    return item.key !== id 
+  })
+   console.table(newItems)
+   this.setState({
+    items:newItems,
+  });
   }
 
   handleFilter = (type) => {
@@ -150,19 +113,6 @@ export default class App extends React.Component {
     this.setState({
       filter: type
     })
-  }
-
-  _filterItems= (filter, items) => {
-    console.log('APP.. inside _filterItems....')
-    console.log('filter:',filter)
-    console.log('items:',items)
-    if(filter==="ALL") return items
-    if(filter==="ACTIVE") {
-      return items.filter(item => !item.complete)
-      } 
-    if(filter==="COMPLETED") {
-      return items.filter(item => item.complete)
-      } 
   }
 
   renderSeparator = () => (
@@ -201,7 +151,7 @@ export default class App extends React.Component {
       );
     }
     console.log('render... is  Ready')
-    const itemsFiltered= this._filterItems(this.state.filter, this.state.items)
+    const itemsFiltered= filterItems(this.state.filter, this.state.items)
     console.log('itemsFiltered:', itemsFiltered)
     return (
       <View style={styles.container}>
@@ -225,8 +175,6 @@ export default class App extends React.Component {
         <Footer
           onFilter= {this.handleFilter}
           filter={this.state.filter}
-          count={this._filterItems('ACTIVE',this.state.items).length}
-          clearCompleted={this.handleClearComplete}
         />
       </View>
     );
